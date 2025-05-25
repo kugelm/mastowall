@@ -2,5 +2,7 @@
   "navbarBrandText": "Mastowall 1.2 - written by ChatGPT4 - Prompting: Ralf Stockmann (rstockm)",
   "defaultServerUrl": "https://mastodon.social",
   "navbarColor": "#333355",
-  "includeReplies": true
+  "includeReplies": true,
+  "serverToken": "placeholder",
+  "updateInterval": 20000
 }
