@@ -186,7 +186,7 @@ const handleHashtagFormSubmit = function(e, hashtagsArray) {
 let isFirstLoad = true;
 
 // On document ready, the script configures Masonry, handles events, fetches and displays posts
-const startWall = function() {
+const startWall = async function() {
     const defaultServerUrl = await fetchConfig();
     $('.masonry-grid').masonry({
         itemSelector: '.col-sm-3',
