@@ -1,5 +1,7 @@
 // The existingPosts array is used to track already displayed posts
 let existingPosts = [];
+let serverToken = "";
+let updateInterval = 10000;
 
 // getUrlParameter helps to fetch URL parameters
 function getUrlParameter(name) {
@@ -14,6 +16,10 @@ const secondsAgo = date => Math.floor((new Date() - date) / 1000);
 
 // timeAgo formats the time elapsed in a human readable format
 const timeAgo = function(seconds) {
+	// hack because sometimes this function is called for whatever reason...
+	if (isNaN(seconds)) {
+		return seconds;
+	}
     const intervals = [
         { limit: 31536000, text: 'years' },
         { limit: 2592000, text: 'months' },
@@ -39,6 +45,8 @@ const fetchConfig = async function() {
         $('#navbar-brand').text(config.navbarBrandText);
         $('.navbar').css('background-color', config.navbarColor);
         includeReplies = config.includeReplies;
+        serverToken = config.serverToken;
+        updateInterval = config.updateInterval;
         return config.defaultServerUrl;
     } catch (error) {
         console.error("Error loading config.json:", error);
@@ -47,6 +55,11 @@ const fetchConfig = async function() {
 
 // fetchPosts fetches posts from the server using the given hashtag
 const fetchPosts = async function(serverUrl, hashtag) {
+	$.ajaxSetup({
+	   headers:{
+	      'Authorization': `Bearer ${serverToken}`
+	   }
+	});
     try {
         const posts = await $.get(`${serverUrl}/api/v1/timelines/tag/${hashtag}?limit=40`);
         return posts;
@@ -57,7 +70,7 @@ const fetchPosts = async function(serverUrl, hashtag) {
 
 // updateTimesOnPage updates the time information displayed for each post
 const updateTimesOnPage = function() {
-    $('.card-text a').each(function() {
+    $('.card-time a').each(function() {
         const date = new Date($(this).attr('data-time'));
         const newTimeAgo = timeAgo(secondsAgo(date));
         $(this).text(newTimeAgo);
@@ -84,7 +97,7 @@ const displayPost = function(post) {
                     ''}
                 <p class="card-text">${DOMPurify.sanitize(post.content)}</p>
                 ${post.spoiler_text ? `<p class="card-text text-muted spoiler">${DOMPurify.sanitize(post.spoiler_text)}</p>` : ''}
-                <p class="card-text text-right"><small class="text-muted"><a href="${post.url}" target="_blank" data-time="${post.created_at}">${timeAgo(secondsAgo(new Date(post.created_at)))}</a></small></p>
+                <p class="card-text text-right card-time"><small class="text-muted"><a href="${post.url}" target="_blank" data-time="${post.created_at}">${timeAgo(secondsAgo(new Date(post.created_at)))}</a></small></p>
             </div>
         </div>
     `;
@@ -204,10 +217,12 @@ $(document).ready(async function() {
     if (hashtagsArray.length > 0 && hashtagsArray[0] !== '') {
         const allPosts = await Promise.all(hashtagsArray.map(hashtag => fetchPosts(serverUrl, hashtag)));
         updateWall(allPosts.flat());
-        setInterval(async function() {
-            const newPosts = await Promise.all(hashtagsArray.map(hashtag => fetchPosts(serverUrl, hashtag)));
-            updateWall(newPosts.flat());
-        }, 10000);
+        if (updateInterval > 0) {
+        	setInterval(async function() {
+            	const newPosts = await Promise.all(hashtagsArray.map(hashtag => fetchPosts(serverUrl, hashtag)));
+            	updateWall(newPosts.flat());
+        	}, updateInterval);
+        }
     } else {
         $('#zero-state').removeClass('d-none');
         $('#app-content').addClass('d-none');
