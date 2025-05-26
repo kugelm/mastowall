@@ -77,6 +77,13 @@ const updateTimesOnPage = function() {
     });
 };
 
+// helper function to put a card on the wall
+const insertCard = function(crdHTML) {
+    let $card = $(crdHTML);
+    $('#wall').prepend($card);
+    $('.masonry-grid').masonry('prepended', $card);
+};
+
 // displayPost creates and displays a post
 const displayPost = function(post) {
     if (existingPosts.includes(post.id) || (!includeReplies && post.in_reply_to_id !== null)) return;
@@ -101,10 +108,25 @@ const displayPost = function(post) {
             </div>
         </div>
     `;
+   insertCard(cardHTML);
 
-    let $card = $(cardHTML);
-    $('#wall').prepend($card);
-    $('.masonry-grid').masonry('prepended', $card);
+};
+
+const insertDummy = function(my_content){
+    let dtNow = new Date();
+    let cardHTML = `
+        <div class="col-sm-3">
+            <div class="card m-2 p-2">
+                <div class="d-flex align-items-center mb-2">
+                    <!-- img src="" class="avatar-img rounded-circle mr-2">
+                    <p class="m-0">dummy</p -->
+                </div>
+                <p class="card-text">${DOMPurify.sanitize(my_content)}</p>
+                <p class="card-text text-right card-time"><small class="text-muted"><a href="#" target="_blank" data-time="${dtNow}">aktuell</a></small></p>
+            </div>
+        </div>
+    `;
+   insertCard(cardHTML);
 };
 
 // Set the document title based on the first hashtag in the URL
