@@ -82,6 +82,7 @@ const insertCard = function(crdHTML) {
     let $card = $(crdHTML);
     $('#wall').prepend($card);
     $('.masonry-grid').masonry('prepended', $card);
+    return $card
 };
 
 // displayPost creates and displays a post
@@ -126,7 +127,7 @@ const insertDummy = function(my_content){
             </div>
         </div>
     `;
-   insertCard(cardHTML);
+   return insertCard(cardHTML);
 };
 
 // Set the document title based on the first hashtag in the URL
